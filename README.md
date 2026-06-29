@@ -66,7 +66,7 @@ Since this tool is an independent open-source project and does not have an expen
 Please click **"More info"** on the window, then click **"Run anyway"** to launch the application safely.
 
 ### 🚀 Features
-* **Background Focus Emulation**: Multi-window background focus emulation for *Angels Online Global* to effectively prevent game lag/freezing when running multiple clients.
+* **Background Focus Emulation**: Multi-window background focus emulation for *Angels Online Global* to effectively prevent game freezing when running multiple clients.
 * **Window Resizing Unlock**: Automatically unlocks fixed window boundaries for custom resizing (safely bypasses fullscreen mode).
 
 ### 📦 Installation
