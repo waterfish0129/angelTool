@@ -1,9 +1,26 @@
-# 👼 angelTool - Angels Online Global Multi-Window Optimizer
+# angelTool
 
-[![License: MIT](https://shields.io)](https://opensource.org)
-[![Microsoft .NET](https://shields.io)](https://microsoft.com)
+<br>
 
----
+<table align="center">
+  <tr>
+    <td align="center"><b>Before</b></td>
+    <td align="center"><b>After</b></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/c3a0427b-790c-4510-92ec-135843eebc3b" width="400" alt="Before"></td>
+    <td><img src="https://github.com/user-attachments/assets/78db49b3-7d64-4fe7-a31b-e8443e2cf89c" width="400" alt="After"></td>
+  </tr>
+</table>
+
+<br>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/51691d8d-3909-4549-8e3d-8298095b9a6b" width="600" alt="Showcase">
+</p>
+
+<br>
+<hr>
 
 ## 🇹🇼 中文說明 (Traditional Chinese)
 
@@ -28,7 +45,7 @@
 
 ⚠️ **Windows SmartScreen の警告に関するお知らせ**
 本ツールは個人のオープンソース開発であり、マイクロソフトの公式デジタル署名を購入していないため、初回起動時に「Windows によって PC が保護されました」という青い警告画面が表示される場合があります。
-**これはシステムの仕様であり、ウイルスではありません。**
+**傷これはシステムの仕様であり、ウイルスではありません。**
 画面上の **「詳細情報」** をクリックし、新しく表示された **「実行」** ボタンを押すことで安全に起動できます。
 
 ### 🚀 特徴
