@@ -9,14 +9,14 @@
   </tr>
   <tr>
     <td><img src="https://github.com/user-attachments/assets/c3a0427b-790c-4510-92ec-135843eebc3b" width="400" alt="Before"></td>
-    <td><img src="https://github.com/user-attachments/assets/78db49b3-7d64-4fe7-a31b-e8443e2cf89c" width="400" alt="After"></td>
+    <td><img src="https://github.com/user-attachments/assets/51691d8d-3909-4549-8e3d-8298095b9a6b" width="400" alt="After"></td>
   </tr>
 </table>
 
 <br>
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/51691d8d-3909-4549-8e3d-8298095b9a6b" width="600" alt="Showcase">
+  <img src="https://github.com/user-attachments/assets/78db49b3-7d64-4fe7-a31b-e8443e2cf89c" width="600" alt="Showcase">
 </p>
 
 <br>
@@ -25,14 +25,13 @@
 ## 🇹🇼 中文說明 (Traditional Chinese)
 
 ⚠️ **關於 Windows SmartScreen 藍色警告提示**
-由於本工具為個人獨立開源開發，未購買微軟高昂的企業數位簽章，初次執行時 Windows 可能會跳出「Windows 已保護您的電腦」藍色警告視窗。
+由於本工具為個人獨立開源開發，未購買微軟高昂的企業數位簽章，初次執行時 Windows幕可能會跳出「Windows 已保護您的電腦」藍色警告視窗。
 **此為微軟預設的安全防護機制，並非中毒。**
 請在該視窗上點擊 **「其他資訊」** ➔ 再點擊右下角出現的 **「仍要執行」** 即可安全啟動！
 
 ### 🚀 功能特點
-* **背景 Focus 偽裝**：針對 *Angels Online Global* 提供全自動背景 Focus 偽裝，有效防止遊戲多開時因切換視窗而斷線。
+* **背景 Focus 偽裝**：針對 *Angels Online Global* 提供全自動背景 Focus 偽裝，有效防止遊戲多開時畫面停滯。
 * **尺寸限制解鎖**：全自動解除遊戲視窗尺寸限制，支援滑鼠自由拖曳（全螢幕模式下智慧自動跳過，不影響體驗）。
-* **多國語系支援**：內建繁體中文、英文、日文三國語系，隨使用者作業系統自動流暢切換。
 
 ### 📦 安裝與使用
 1. 前往本專案右側的 **Releases** 區塊，下載最新版的 `angelTool.zip`。
@@ -45,13 +44,12 @@
 
 ⚠️ **Windows SmartScreen の警告に関するお知らせ**
 本ツールは個人のオープンソース開発であり、マイクロソフトの公式デジタル署名を購入していないため、初回起動時に「Windows によって PC が保護されました」という青い警告画面が表示される場合があります。
-**傷これはシステムの仕様であり、ウイルスではありません。**
+**これはシステムの仕様であり、ウイルスではありません。**
 画面上の **「詳細情報」** をクリックし、新しく表示された **「実行」** ボタンを押すことで安全に起動できます。
 
 ### 🚀 特徴
-* **バックグラウンド偽装**：*Angels Online Global* のマルチウィンドウ背景フォーカス偽装を提供し、切断を効果的に防止します。
+* **バックグラウンド偽装**：*Angels Online Global* のマルチウィンドウ背景フォーカス偽装を提供し、多重起動時の画面のフリーズ（停止）を効果的に防止します。
 * **サイズ制限解除**：ウィンドウサイズ制限を自動解除し、ドラッグでのリサイズに対応（フルスクリーン時は自動スキップ）。
-* **多言語対応**：繁体字中国語、英語、日本語の3ヶ国語に完全対応、システム言語に応じて自動切り替え。
 
 ### 📦 使い方
 1. 下の **Releases** セクションから最新の `angelTool.zip` をダウンロードします。
@@ -68,9 +66,8 @@ Since this tool is an independent open-source project and does not have an expen
 Please click **"More info"** on the window, then click **"Run anyway"** to launch the application safely.
 
 ### 🚀 Features
-* **Background Focus Emulation**: Multi-window background focus emulation for *Angels Online Global* to prevent client disconnection.
+* **Background Focus Emulation**: Multi-window background focus emulation for *Angels Online Global* to effectively prevent game lag/freezing when running multiple clients.
 * **Window Resizing Unlock**: Automatically unlocks fixed window boundaries for custom resizing (safely bypasses fullscreen mode).
-* **Multi-Language Support**: Native localization support for Traditional Chinese, English, and Japanese.
 
 ### 📦 Installation
 1. Go to the **Releases** section on the right, and download the latest `angelTool.zip`.
