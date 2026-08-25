@@ -6,6 +6,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace angelTool
 {
@@ -48,6 +50,15 @@ namespace angelTool
 
         [DllImport("user32.dll")]
         static extern IntPtr CreateDesktop(string lpszDesktop, IntPtr lpszDevice, IntPtr pDevmode, int dwFlags, uint dwDesiredAccess, IntPtr lpsa);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+
+        [DllImport("user32.dll")]
+        private static extern uint GetWindowThreadProcessId(
+            IntPtr hWnd,
+            out uint processId);
+
         /// <summary>
         /// Win32 RECT structure defining window coordinates.
         /// [ZH] 定義視窗座標的 Win32 RECT 結構。
@@ -154,6 +165,7 @@ namespace angelTool
             {
                 // [ZH] 關閉自動化定時器並還原按鈕預設外觀 / [EN] Disable automation timer and revert button visuals
                 cheatTimer.Stop();
+                RestoreAllGameAudio();
                 btnRun.Text = LanguageManager.GetString("BtnRunText_Start");
                 btnRun.BackColor = System.Drawing.SystemColors.Control;
 
@@ -180,8 +192,17 @@ namespace angelTool
 
         private void CheatTimer_Tick(object sender, EventArgs e)
         {
+            // 目前真正位於前景的視窗
+            IntPtr foregroundHwnd = GetForegroundWindow();
             // [ZH] 觸發 Win32 API 遍歷桌面上所有開啟的視窗 / [EN] Trigger Win32 API to enumerate all opened windows on the desktop
-            EnumWindows(new EnumWindowsProc(ProcessGameWindowAutomation), IntPtr.Zero);
+
+            EnumWindows(
+                (hWnd, lParam) =>
+                {
+                    ProcessGameWindowAutomation(hWnd, lParam, foregroundHwnd);
+                    return true;
+                },
+                IntPtr.Zero);
         }
 
         /// <summary>
@@ -191,65 +212,229 @@ namespace angelTool
         /// <param name="hWnd">The window handle.</param>
         /// <param name="lParam">The optional application-defined parameter.</param>
         /// <returns>True to continue enumeration; otherwise, false.</returns>
-        private bool ProcessGameWindowAutomation(IntPtr hWnd, IntPtr lParam)
+        private void ProcessGameWindowAutomation(
+           IntPtr hWnd,
+           IntPtr lParam,
+           IntPtr foregroundHwnd)
         {
-            // [ZH] 僅針對畫面上實質可見的視窗進行操作 / [EN] Execute operations only on windows that are physically visible
-            if (IsWindowVisible(hWnd))
+            if (!IsWindowVisible(hWnd))
+                return;
+
+            StringBuilder sb = new StringBuilder(256);
+            GetWindowText(hWnd, sb, sb.Capacity);
+
+            string title = sb.ToString();
+
+            if (string.IsNullOrEmpty(title) ||
+                !title.StartsWith(
+                    "Angels Online Global",
+                    StringComparison.OrdinalIgnoreCase))
             {
-                StringBuilder sb = new StringBuilder(256);
-                GetWindowText(hWnd, sb, sb.Capacity);
-                string title = sb.ToString();
+                return;
+            }
 
-                // [ZH] 精準篩選出標題開頭為目標遊戲名稱的視窗 / [EN] Filter out windows whose titles start with the specific game name
-                if (!string.IsNullOrEmpty(title) && title.StartsWith("Angels Online Global", StringComparison.OrdinalIgnoreCase))
+            // ============================================================
+            // 判斷是否為全螢幕
+            // ============================================================
+
+            bool isFullscreen = false;
+
+            if (GetWindowRect(hWnd, out RECT rect))
+            {
+                int windowWidth = rect.Right - rect.Left;
+                int windowHeight = rect.Bottom - rect.Top;
+
+                int screenWidth = Screen.PrimaryScreen.Bounds.Width;
+                int screenHeight = Screen.PrimaryScreen.Bounds.Height;
+
+                if (windowWidth == screenWidth &&
+                    windowHeight == screenHeight &&
+                    rect.Left == 0 &&
+                    rect.Top == 0)
                 {
-                    bool isFullscreen = false;
-
-                    // [ZH] 執行全螢幕智慧偵測偵測 / [EN] Perform smart fullscreen detection logic
-                    if (GetWindowRect(hWnd, out RECT rect))
-                    {
-                        int windowWidth = rect.Right - rect.Left;
-                        int windowHeight = rect.Bottom - rect.Top;
-
-                        int screenWidth = Screen.PrimaryScreen.Bounds.Width;
-                        int screenHeight = Screen.PrimaryScreen.Bounds.Height;
-
-                        // [ZH] 視窗範圍與顯示器解析度完全吻合時判定為全螢幕 / [EN] Deemed fullscreen if window boundaries match monitor dimensions completely
-                        if (windowWidth == screenWidth && windowHeight == screenHeight && rect.Left == 0 && rect.Top == 0)
-                        {
-                            isFullscreen = true;
-                        }
-                    }
-
-                    // [ZH] 功能 A：解除邊框調整尺寸限制（若為全螢幕則安全跳過） / [EN] Feature A: Unlock border resizing constraints (Safely bypassed if fullscreen)
-                    if (!isFullscreen)
-                    {
-                        int currentStyle = GetWindowLong(hWnd, GWL_STYLE);
-                        int targetStyle = currentStyle | WS_THICKFRAME | WS_MAXIMIZEBOX;
-
-                        // [ZH] 僅當目前樣式不符時才重寫並刷新，大幅節省 CPU 消耗並防止畫面劇烈閃爍 / [EN] Only re-write and refresh if layout mismatches; saves CPU and avoids rapid flickering
-                        if (currentStyle != targetStyle)
-                        {
-                            SetWindowLong(hWnd, GWL_STYLE, targetStyle);
-                            SetWindowPos(hWnd, IntPtr.Zero, 0, 0, 0, 0,
-                                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-                        }
-                    }
-
-                    // [ZH] 功能 B：定時發送偽裝非客戶區激活與視窗激活核心訊號 / [EN] Feature B: Regularly send non-client area activation and focus emulation signals
-                    SendMessage(hWnd, WM_NCACTIVATE, (IntPtr)1, IntPtr.Zero);
-                    SendMessage(hWnd, WM_ACTIVATE, (IntPtr)WA_ACTIVE, IntPtr.Zero);
-                    SendMessage(hWnd, WM_ACTIVATEAPP, (IntPtr)1, IntPtr.Zero);
-                    SendMessage(hWnd, WM_SETFOCUS, IntPtr.Zero, IntPtr.Zero);
-
-
+                    isFullscreen = true;
                 }
             }
-            return true;
+
+            // ============================================================
+            // 功能 A：解除邊框調整尺寸限制
+            // ============================================================
+
+            if (!isFullscreen)
+            {
+                int currentStyle = GetWindowLong(hWnd, GWL_STYLE);
+                int targetStyle =
+                    currentStyle |
+                    WS_THICKFRAME |
+                    WS_MAXIMIZEBOX;
+
+                if (currentStyle != targetStyle)
+                {
+                    SetWindowLong(
+                        hWnd,
+                        GWL_STYLE,
+                        targetStyle);
+
+                    SetWindowPos(
+                        hWnd,
+                        IntPtr.Zero,
+                        0,
+                        0,
+                        0,
+                        0,
+                        SWP_NOMOVE |
+                        SWP_NOSIZE |
+                        SWP_NOZORDER |
+                        SWP_FRAMECHANGED);
+                }
+            }
+
+            // ============================================================
+            // 功能 B：偽裝遊戲為 Active
+            // ============================================================
+
+            SendMessage(
+                hWnd,
+                WM_NCACTIVATE,
+                (IntPtr)1,
+                IntPtr.Zero);
+
+            SendMessage(
+                hWnd,
+                WM_ACTIVATE,
+                (IntPtr)WA_ACTIVE,
+                IntPtr.Zero);
+
+            SendMessage(
+                hWnd,
+                WM_ACTIVATEAPP,
+                (IntPtr)1,
+                IntPtr.Zero);
+
+            SendMessage(
+                hWnd,
+                WM_SETFOCUS,
+                IntPtr.Zero,
+                IntPtr.Zero);
+
+            // ============================================================
+            // 功能 C：音效控制
+            //
+            // 只有真正位於 Foreground 的遊戲保持聲音。
+            // 其他遊戲 Mute。
+            //
+            // 注意：
+            // 這裡只切換 Mute，不修改原本音量。
+            // ============================================================
+
+            bool isRealForeground =
+                hWnd == foregroundHwnd;
+
+            GetWindowThreadProcessId(
+                hWnd,
+                out uint processId);
+
+            if (processId != 0)
+            {
+                if (isRealForeground)
+                {
+                    AudioSessionManager.Unmute((int)processId);
+                }
+                else
+                {
+                    AudioSessionManager.Mute((int)processId);
+                }
+            }
         }
 
         #endregion
+
+        /// <summary>
+        /// [ZH] 恢復所有目標遊戲視窗的正常啟用狀態與音效
+        /// [EN] Restore the normal activation state and audio of all target game windows.
+        /// </summary>
+        private void RestoreAllGameAudio()
+        {
+            // [ZH] 使用 HashSet 避免同一個 Process ID 被重複處理
+            // [EN] Use a HashSet to prevent the same Process ID from being processed multiple times.
+            HashSet<int> restoredPids = new HashSet<int>();
+
+            // [ZH] 遍歷桌面上所有開啟的視窗
+            // [EN] Enumerate all currently opened windows on the desktop.
+            EnumWindows((hWnd, lParam) =>
+            {
+                // [ZH] 僅處理目前實際可見的視窗
+                // [EN] Process only windows that are currently visible.
+                if (!IsWindowVisible(hWnd))
+                    return true;
+
+                StringBuilder sb = new StringBuilder(256);
+                GetWindowText(hWnd, sb, sb.Capacity);
+
+                string title = sb.ToString();
+
+                // [ZH] 精準篩選出標題開頭為目標遊戲名稱的視窗
+                // [EN] Filter windows whose titles start with the target game name.
+                if (!string.IsNullOrEmpty(title) &&
+                    title.StartsWith(
+                        "Angels Online Global",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    // ============================================================
+                    // [ZH] 取消先前偽造的 WM_ACTIVATEAPP Active 狀態
+                    // [EN] Cancel the fake WM_ACTIVATEAPP Active state previously created.
+                    // ============================================================
+
+                    SendMessage(
+                        hWnd,
+                        WM_ACTIVATEAPP,
+                        IntPtr.Zero,
+                        IntPtr.Zero);
+
+
+                    // ============================================================
+                    // [ZH] 取得該遊戲視窗所屬的 Process ID
+                    // [EN] Retrieve the Process ID associated with the game window.
+                    // ============================================================
+
+                    GetWindowThreadProcessId(
+                        hWnd,
+                        out uint processId);
+
+
+                    // ============================================================
+                    // [ZH] 恢復遊戲音效
+                    // [EN] Restore the game audio.
+                    //
+                    // [ZH] 只執行 Unmute，不修改使用者原本設定的音量。
+                    // [EN] Only unmute the audio without modifying the user's original volume.
+                    // ============================================================
+
+                    if (processId != 0 &&
+                        restoredPids.Add((int)processId))
+                    {
+                        AudioSessionManager.Unmute(
+                            (int)processId);
+                    }
+                }
+
+                // [ZH] 繼續遍歷下一個視窗
+                // [EN] Continue enumerating the next window.
+                return true;
+
+            }, IntPtr.Zero);
+        }
+
+
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            RestoreAllGameAudio();
+        }
     }
+
+
+
 
     /// <summary>
     /// Global localization helper class handling multi-language resource loading seamlessly.
