@@ -165,6 +165,7 @@ namespace angelTool
             {
                 // [ZH] 關閉自動化定時器並還原按鈕預設外觀 / [EN] Disable automation timer and revert button visuals
                 cheatTimer.Stop();
+                RestoreAllGameAudio();
                 btnRun.Text = LanguageManager.GetString("BtnRunText_Start");
                 btnRun.BackColor = System.Drawing.SystemColors.Control;
 
@@ -347,7 +348,93 @@ namespace angelTool
         }
 
         #endregion
+
+        /// <summary>
+        /// [ZH] 恢復所有目標遊戲視窗的正常啟用狀態與音效
+        /// [EN] Restore the normal activation state and audio of all target game windows.
+        /// </summary>
+        private void RestoreAllGameAudio()
+        {
+            // [ZH] 使用 HashSet 避免同一個 Process ID 被重複處理
+            // [EN] Use a HashSet to prevent the same Process ID from being processed multiple times.
+            HashSet<int> restoredPids = new HashSet<int>();
+
+            // [ZH] 遍歷桌面上所有開啟的視窗
+            // [EN] Enumerate all currently opened windows on the desktop.
+            EnumWindows((hWnd, lParam) =>
+            {
+                // [ZH] 僅處理目前實際可見的視窗
+                // [EN] Process only windows that are currently visible.
+                if (!IsWindowVisible(hWnd))
+                    return true;
+
+                StringBuilder sb = new StringBuilder(256);
+                GetWindowText(hWnd, sb, sb.Capacity);
+
+                string title = sb.ToString();
+
+                // [ZH] 精準篩選出標題開頭為目標遊戲名稱的視窗
+                // [EN] Filter windows whose titles start with the target game name.
+                if (!string.IsNullOrEmpty(title) &&
+                    title.StartsWith(
+                        "Angels Online Global",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    // ============================================================
+                    // [ZH] 取消先前偽造的 WM_ACTIVATEAPP Active 狀態
+                    // [EN] Cancel the fake WM_ACTIVATEAPP Active state previously created.
+                    // ============================================================
+
+                    SendMessage(
+                        hWnd,
+                        WM_ACTIVATEAPP,
+                        IntPtr.Zero,
+                        IntPtr.Zero);
+
+
+                    // ============================================================
+                    // [ZH] 取得該遊戲視窗所屬的 Process ID
+                    // [EN] Retrieve the Process ID associated with the game window.
+                    // ============================================================
+
+                    GetWindowThreadProcessId(
+                        hWnd,
+                        out uint processId);
+
+
+                    // ============================================================
+                    // [ZH] 恢復遊戲音效
+                    // [EN] Restore the game audio.
+                    //
+                    // [ZH] 只執行 Unmute，不修改使用者原本設定的音量。
+                    // [EN] Only unmute the audio without modifying the user's original volume.
+                    // ============================================================
+
+                    if (processId != 0 &&
+                        restoredPids.Add((int)processId))
+                    {
+                        AudioSessionManager.Unmute(
+                            (int)processId);
+                    }
+                }
+
+                // [ZH] 繼續遍歷下一個視窗
+                // [EN] Continue enumerating the next window.
+                return true;
+
+            }, IntPtr.Zero);
+        }
+
+
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            RestoreAllGameAudio();
+        }
     }
+
+
+
 
     /// <summary>
     /// Global localization helper class handling multi-language resource loading seamlessly.

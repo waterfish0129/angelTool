@@ -444,6 +444,6 @@ namespace angelTool
         public static bool Unmute(int processId)
         {
             return SetProcessMute(processId, false);
-        }
+        }       
     }
 }

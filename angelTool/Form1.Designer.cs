@@ -61,6 +61,7 @@
             DoubleBuffered = true;
             Name = "Form1";
             ShowIcon = false;
+            FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             ResumeLayout(false);
             PerformLayout();
