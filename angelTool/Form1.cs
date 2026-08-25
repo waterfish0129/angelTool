@@ -46,6 +46,8 @@ namespace angelTool
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
+        [DllImport("user32.dll")]
+        static extern IntPtr CreateDesktop(string lpszDesktop, IntPtr lpszDevice, IntPtr pDevmode, int dwFlags, uint dwDesiredAccess, IntPtr lpsa);
         /// <summary>
         /// Win32 RECT structure defining window coordinates.
         /// [ZH] 定義視窗座標的 Win32 RECT 結構。
@@ -65,8 +67,10 @@ namespace angelTool
         public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
         // [ZH] Win32 焦點激活核心訊息常數 / [EN] Win32 Focus and activation core message constants
-        const uint WM_NCACTIVATE = 0x0086;
         const uint WM_ACTIVATE = 0x0006;
+        const uint WM_ACTIVATEAPP = 0x001C;
+        const uint WM_NCACTIVATE = 0x0086;
+        const uint WM_SETFOCUS = 0x0007;
         const int WA_ACTIVE = 1;
 
         // [ZH] Win32 視窗樣式常數（調整大小與最大化） / [EN] Win32 window style constants (resizing and maximization)
@@ -235,6 +239,10 @@ namespace angelTool
                     // [ZH] 功能 B：定時發送偽裝非客戶區激活與視窗激活核心訊號 / [EN] Feature B: Regularly send non-client area activation and focus emulation signals
                     SendMessage(hWnd, WM_NCACTIVATE, (IntPtr)1, IntPtr.Zero);
                     SendMessage(hWnd, WM_ACTIVATE, (IntPtr)WA_ACTIVE, IntPtr.Zero);
+                    SendMessage(hWnd, WM_ACTIVATEAPP, (IntPtr)1, IntPtr.Zero);
+                    SendMessage(hWnd, WM_SETFOCUS, IntPtr.Zero, IntPtr.Zero);
+
+
                 }
             }
             return true;
